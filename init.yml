@@ -1,0 +1,66 @@
+Description: >
+    Antonella Bernobich Dean
+    This template deploys an S3 bucket and creates a IAM role to allow
+    EC2 servers to fetch a file from the S3 bucket.
+
+Parameters:
+    S3BucketName:
+        Description: The name of the S3 bucket (MUST BE all lowercase)
+        Type: String
+    EnvironmentName:
+        Description: An environment name used as a prefix to resource names
+        Type: String
+
+Resources:
+    S3Bucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            BucketName: !Ref S3BucketName
+            PublicAccessBlockConfiguration:
+                BlockPublicAcls: true
+                BlockPublicPolicy: true
+                IgnorePublicAcls: true
+                RestrictPublicBuckets: true
+    
+    S3ReadOnlyForEC2Role:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Statement:
+                    Effect: Allow
+                    Principal:
+                        Service: ec2.amazonaws.com
+                    Action: sts:AssumeRole
+    
+    S3ReadOnlyForEC2InstanceProfile:
+        Type: AWS::IAM::InstanceProfile
+        Properties:
+            Roles:
+                - !Ref S3ReadOnlyForEC2Role
+    
+    S3ReadOnlyForEC2RolePolicies:
+        Type: AWS::IAM::Policy
+        Properties:
+            PolicyName: S3ReadOnlyForEC2
+            PolicyDocument:
+                Statement:
+                    - Effect: Allow
+                      Action: 
+                        - "s3:Get*"
+                        - "s3:List*"
+                      Resource: "*"
+            Roles: 
+                - !Ref S3ReadOnlyForEC2Role
+
+Outputs:
+    S3BucketName:
+        Description: A reference to the S3 bucket
+        Value: !Ref S3Bucket
+        Export:
+            Name: !Sub ${EnvironmentName}-S3BUCKET
+    
+    S3ReadOnlyInstanceProfile:
+        Description: The IAM instance profile needed for the EC2 instances
+        Value: !Ref S3ReadOnlyForEC2InstanceProfile
+        Export:
+            Name: !Sub ${EnvironmentName}-INST-PROF
