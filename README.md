@@ -10,8 +10,8 @@ Here is the picture of the working page:
 ![working](working.png)
 
 ## Prerequisites
-    - An AWS account
-    - The AWS CLI (https://aws.amazon.com/cli/)
+- An AWS account
+- The AWS CLI (https://aws.amazon.com/cli/)
 
 ## Deployment
 Using the AWS CLI, run:
